@@ -35,4 +35,21 @@ public class UserService {
             throw new IllegalStateException("[ERROR] 이미 가입된 회원입니다.");
         }
     }
+
+    public User login(String loginEmail, String loginPassword){
+        Optional <User> findMember =  userRepository.findByEmail(loginEmail);
+
+        if(findMember.isPresent()) {
+            User userEntity = findMember.get();
+            String encodedPwd = userEntity.getPassword();
+            
+            if (passwordEncoder.matches(loginPassword, encodedPwd)) {
+                return userEntity;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 }
