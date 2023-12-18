@@ -11,6 +11,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.nio.charset.StandardCharsets;
+
+
 @Component
 public class JwtProvider {
     
@@ -21,7 +24,7 @@ public class JwtProvider {
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS)); // 유효기간 1시간
         
         String jwt = Jwts.builder()
-                .signWith(SignatureAlgorithm.ES256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
