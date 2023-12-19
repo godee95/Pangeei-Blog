@@ -2,6 +2,9 @@ package inhatc.spring.blog.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,8 +17,11 @@ import inhatc.spring.blog.provider.JwtProvider;
 import inhatc.spring.blog.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@RestController
+
+@Controller
+// @RestController
 @RequestMapping(value = "/member")
 public class UserController {
     private final JwtProvider jwtProvider;
@@ -46,8 +52,13 @@ public class UserController {
         return userDto;
     }
 
+    @GetMapping("/login")
+    public String showLoginForm(){
+        return "login";
+    }
+
     @PostMapping("/login")
-    public String memberLogin(@RequestBody UserDto userDto, HttpSession session, HttpServletResponse response) {
+    public ResponseEntity<String> memberLogin(@RequestBody UserDto userDto, HttpSession session, HttpServletResponse response) {
     System.out.println("UserController.login");
     System.out.println(userDto);
     
@@ -63,9 +74,9 @@ public class UserController {
         System.out.println("jwt : " + jwt);
         response.setHeader("Authorization", "Bearer " + jwt);
 
-        return jwt;
+        return ResponseEntity.ok("{\"token\": \"" + jwt + "\"}");
     } else {
-        return "로그인 실패";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
     }
 
 

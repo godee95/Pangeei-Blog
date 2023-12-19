@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+</head>
+<body>
+
+<script>
+    // Assume you have a function to make the login request to the server
+    function loginUser(userCredentials) {
+        fetch('/member/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userCredentials),
+        })
+        .then(response => {
+            console.log('Authorization Header:', response.headers.get('Authorization'));
+            
+            return response.json();
+        })
+        .then(data => {
+
+            console.log("data : ", data)
+            // Assuming your server returns the JWT token in the 'token' property
+            const jwtToken = data.token;
+
+            // Store the token in localStorage or sessionStorage
+            // You might want to handle the token securely based on your application requirements
+            localStorage.setItem('jwtToken', jwtToken);
+
+            // Redirect to a secured page or perform other actions
+            // window.location.href = '/secured-page';
+        })
+        .catch(error => {
+            console.error('Error during login:', error);
+        });
+    }
+
+    // Example usage
+    const userCredentials = {
+        email: "mindal@naver.com",
+        password: "1234",
+    };
+
+    loginUser(userCredentials);
+</script>
+
+</body>
+</html>
