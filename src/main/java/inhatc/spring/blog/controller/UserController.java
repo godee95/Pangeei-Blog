@@ -1,5 +1,7 @@
 package inhatc.spring.blog.controller;
 
+import java.math.BigInteger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import inhatc.spring.blog.dto.UserDto;
 import inhatc.spring.blog.entity.User;
+import inhatc.spring.blog.provider.JwtClaims;
 import inhatc.spring.blog.provider.JwtProvider;
 import inhatc.spring.blog.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,8 +23,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@Controller
-// @RestController
+// @Controller
+@RestController
 @RequestMapping(value = "/member")
 public class UserController {
     private final JwtProvider jwtProvider;
@@ -59,25 +62,34 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<String> memberLogin(@RequestBody UserDto userDto, HttpSession session, HttpServletResponse response) {
-    System.out.println("UserController.login");
-    System.out.println(userDto);
-    
-    User loginResult = userService.login(userDto.getEmail(), userDto.getPassword());
-    System.out.println("로그인 성공여부 : " + loginResult);
-    if (loginResult != null) {
-        session.setAttribute("loginUserId", loginResult.getId());
-        session.setAttribute("loginEmail", loginResult.getEmail());
+        System.out.println("UserController.login");
+        System.out.println(userDto);
+        
+        User loginResult = userService.login(userDto.getEmail(), userDto.getPassword());
+        System.out.println("로그인 성공여부 : " + loginResult);
+        if (loginResult != null) {
+            session.setAttribute("loginUserId", loginResult.getId());
+            session.setAttribute("loginEmail", loginResult.getEmail());
 
-        System.out.println(loginResult.getId() + "로그인 성공");
+            System.out.println(loginResult.getId() + "로그인 성공");
 
-        String jwt = jwtProvider.create(loginResult.getEmail());
-        System.out.println("jwt : " + jwt);
-        response.setHeader("Authorization", "Bearer " + jwt);
+            String jwt = jwtProvider.create(loginResult.getId(), loginResult.getEmail());
+            JwtClaims jwtClaims = jwtProvider.validate(jwt);
+            
+            if (jwtClaims != null) {
+                BigInteger userId = jwtClaims.getUserId();
+                String email = jwtClaims.getEmail();
+                System.out.println("loginId : " + userId);
+                System.out.println("loginEmail : " + email);
+            }
 
-        return ResponseEntity.ok("{\"token\": \"" + jwt + "\"}");
-    } else {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
-    }
+            System.out.println("jwt : " + jwt);
+            response.setHeader("Authorization", "Bearer " + jwt);
+
+            return ResponseEntity.ok("{\"token\": \"" + jwt + "\"}");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+        }
 
 
     }

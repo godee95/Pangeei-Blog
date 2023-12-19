@@ -11,8 +11,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-
 
 @Component
 public class JwtProvider {
@@ -20,23 +20,23 @@ public class JwtProvider {
     @Value("${secret-key}")
     private String secretKey;
 
-    public String create(String email) {
+    public String create(Long userId, String email) {
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS)); // 유효기간 1시간
         
         String jwt = Jwts.builder()
                 .signWith(SignatureAlgorithm.HS256, secretKey)
+                .claim("userId", userId)  // Add the user ID to the payload
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
                 .compact();
-
+    
         return jwt;
     }
 
-    public String validate(String jwt) {
-
+    public JwtClaims validate(String jwt) {
         Claims claims = null;
-
+    
         try {
             claims = Jwts.parser().setSigningKey(secretKey)
                     .parseClaimsJws(jwt).getBody();
@@ -44,7 +44,11 @@ public class JwtProvider {
             exception.printStackTrace();
             return null;
         }
-
-        return claims.getSubject();
+    
+        // Extract the user ID and email from the claims
+        BigInteger userId = new BigInteger(claims.get("userId").toString());
+        String email = claims.getSubject();
+    
+        return new JwtClaims(userId, email);
     }
 }

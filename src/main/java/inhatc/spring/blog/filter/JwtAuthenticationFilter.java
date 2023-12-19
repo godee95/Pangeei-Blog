@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import inhatc.spring.blog.provider.JwtClaims;
 import inhatc.spring.blog.provider.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,9 +39,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
     
-            String email = jwtProvider.validate(token);
-    
-            if (email == null) {
+            JwtClaims jwtClaims = jwtProvider.validate(token);
+            String email;
+            if (jwtClaims != null) {
+                email = jwtClaims.getEmail();
+            } else {
                 filterChain.doFilter(request, response);
                 return;
             }
